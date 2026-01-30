@@ -686,7 +686,7 @@
 
         // State
         let currentMode = 'wake';
-        let notificationTimeout = null;
+        let notificationTimeouts = [];
         let deferredPrompt = null;
 
         // DOM Elements
@@ -928,46 +928,53 @@
                 return;
             }
 
-            // Cancel existing notification
-            if (notificationTimeout) {
-                clearTimeout(notificationTimeout);
-            }
+            // Cancel existing notifications
+            notificationTimeouts.forEach(timeout => clearTimeout(timeout));
+            notificationTimeouts = [];
 
             const now = new Date();
             const currentMinutes = now.getHours() * 60 + now.getMinutes();
-            
-            let delay;
+
             if (currentMode === 'wake') {
-                // For bedtime reminder, notify 15 minutes before
-                delay = (targetMinutes - currentMinutes - 15) * 60 * 1000;
-                if (delay < 0) delay += 24 * 60 * 60 * 1000;
+                // Schedule multiple reminders: 15, 10, 5 minutes before bedtime
+                const reminders = [
+                    { minutes: 15, message: 'Пора готовиться ко сну, осталось 15 минут' },
+                    { minutes: 10, message: 'Пора готовиться ко сну, осталось 10 минут' },
+                    { minutes: 5, message: 'Пора готовиться ко сну, осталось 5 минут' }
+                ];
+
+                reminders.forEach(reminder => {
+                    let delay = (targetMinutes - currentMinutes - reminder.minutes) * 60 * 1000;
+                    if (delay < 0) delay += 24 * 60 * 60 * 1000;
+
+                    // Only schedule if delay is reasonable (not more than 24 hours)
+                    if (delay > 0 && delay < 24 * 60 * 60 * 1000) {
+                        const timeout = setTimeout(() => {
+                            showNotification(reminder.message, `Ложитесь в ${time}, чтобы выспаться`);
+                        }, delay);
+                        notificationTimeouts.push(timeout);
+                    }
+                });
+
+                // Show scheduled notification UI
+                scheduledNotification.classList.remove('hidden');
+                scheduledTime.textContent = time;
+
+                // Save to localStorage
+                localStorage.setItem('scheduledNotification', JSON.stringify({
+                    time: time,
+                    targetMinutes: targetMinutes,
+                    scheduledAt: Date.now()
+                }));
             } else {
                 // For wake-up, no notification needed (use system alarm)
                 return;
             }
-
-            notificationTimeout = setTimeout(() => {
-                showNotification('Пора готовиться ко сну', `Ложитесь в ${time}, чтобы выспаться`);
-            }, delay);
-
-            // Show scheduled notification UI
-            scheduledNotification.classList.remove('hidden');
-            scheduledTime.textContent = time;
-            
-            // Save to localStorage
-            localStorage.setItem('scheduledNotification', JSON.stringify({
-                time: time,
-                targetMinutes: targetMinutes,
-                scheduledAt: Date.now(),
-                delay: delay
-            }));
         }
 
         function cancelScheduledNotification() {
-            if (notificationTimeout) {
-                clearTimeout(notificationTimeout);
-                notificationTimeout = null;
-            }
+            notificationTimeouts.forEach(timeout => clearTimeout(timeout));
+            notificationTimeouts = [];
             scheduledNotification.classList.add('hidden');
             localStorage.removeItem('scheduledNotification');
         }
@@ -993,14 +1000,31 @@
             const saved = localStorage.getItem('scheduledNotification');
             if (saved) {
                 const data = JSON.parse(saved);
-                const elapsed = Date.now() - data.scheduledAt;
-                const remaining = data.delay - elapsed;
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-                if (remaining > 0) {
-                    notificationTimeout = setTimeout(() => {
-                        showNotification('Пора готовиться ко сну', `Ложитесь в ${data.time}, чтобы выспаться`);
-                    }, remaining);
+                const reminders = [
+                    { minutes: 15, message: 'Пора готовиться ко сну, осталось 15 минут' },
+                    { minutes: 10, message: 'Пора готовиться ко сну, осталось 10 минут' },
+                    { minutes: 5, message: 'Пора готовиться ко сну, осталось 5 минут' }
+                ];
 
+                let hasActiveReminder = false;
+
+                reminders.forEach(reminder => {
+                    let delay = (data.targetMinutes - currentMinutes - reminder.minutes) * 60 * 1000;
+                    if (delay < 0) delay += 24 * 60 * 60 * 1000;
+
+                    if (delay > 0 && delay < 24 * 60 * 60 * 1000) {
+                        const timeout = setTimeout(() => {
+                            showNotification(reminder.message, `Ложитесь в ${data.time}, чтобы выспаться`);
+                        }, delay);
+                        notificationTimeouts.push(timeout);
+                        hasActiveReminder = true;
+                    }
+                });
+
+                if (hasActiveReminder) {
                     scheduledNotification.classList.remove('hidden');
                     scheduledTime.textContent = data.time;
                 } else {
