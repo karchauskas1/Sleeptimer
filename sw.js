@@ -1,10 +1,10 @@
-const CACHE_NAME = 'sleep-calculator-v2';
+const CACHE_NAME = 'sleep-calculator-v3';
 const urlsToCache = [
-    './',
-    './index.html',
-    './manifest.json',
-    './icons/icon-192.png',
-    './icons/icon-512.png',
+    '/Sleeptimer/',
+    '/Sleeptimer/index.html',
+    '/Sleeptimer/manifest.json',
+    '/Sleeptimer/icons/icon-192.png',
+    '/Sleeptimer/icons/icon-512.png',
     'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap'
 ];
 
@@ -68,7 +68,7 @@ self.addEventListener('fetch', (event) => {
             })
             .catch(() => {
                 // Return offline page if available
-                return caches.match('./index.html');
+                return caches.match('/Sleeptimer/index.html');
             })
     );
 });
@@ -77,8 +77,8 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
     const options = {
         body: event.data ? event.data.text() : 'Пора готовиться ко сну',
-        icon: './icons/icon-192.png',
-        badge: './icons/icon-192.png',
+        icon: '/Sleeptimer/icons/icon-192.png',
+        badge: '/Sleeptimer/icons/icon-192.png',
         vibrate: [200, 100, 200],
         tag: 'sleep-reminder',
         renotify: true,

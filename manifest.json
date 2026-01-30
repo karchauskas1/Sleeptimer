@@ -2,12 +2,12 @@
     "name": "Калькулятор сна",
     "short_name": "Сон",
     "description": "Рассчитай оптимальное время сна по циклам",
-    "start_url": "./",
+    "start_url": "/Sleeptimer/",
     "display": "standalone",
     "background_color": "#0a0a0f",
     "theme_color": "#0a0a0f",
     "orientation": "portrait",
-    "scope": "./",
+    "scope": "/Sleeptimer/",
     "lang": "ru",
     "categories": ["health", "lifestyle", "utilities"],
     "icons": [
@@ -65,7 +65,7 @@
             "name": "Лечь сейчас",
             "short_name": "Сейчас",
             "description": "Рассчитать время пробуждения",
-            "url": "/?mode=now",
+            "url": "/Sleeptimer/?mode=now",
             "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
         }
     ],
