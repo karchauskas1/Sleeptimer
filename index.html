@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Сон">
+    <meta name="description" content="Калькулятор циклов сна — просыпайся бодрым">
+    
+    <title>Калькулятор сна</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --bg-card-hover: #22222e;
+            --text-primary: #f5f5f7;
+            --text-secondary: #8e8e93;
+            --text-muted: #636366;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --accent-soft: rgba(99, 102, 241, 0.15);
+            --recommended: #22c55e;
+            --recommended-glow: rgba(34, 197, 94, 0.2);
+            --warning: #f59e0b;
+            --border: rgba(255, 255, 255, 0.06);
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .light-mode {
+            --bg-primary: #f8f8fc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f0f0f5;
+            --text-primary: #1a1a2e;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: rgba(0, 0, 0, 0.08);
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100dvh;
+            padding: 0 20px 40px;
+            transition: background 0.4s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-card-hover);
+            transform: scale(1.05);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-secondary);
+            transition: fill 0.3s ease;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 32px 0 40px;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 4px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.25s ease;
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .tab:not(.active):hover {
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+
+        /* Time Picker */
+        .time-section {
+            margin-bottom: 32px;
+        }
+
+        .time-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .time-picker-wrapper {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .time-input {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            font-size: 48px;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--text-primary);
+            width: 120px;
+            text-align: center;
+            transition: all 0.2s ease;
+            -moz-appearance: textfield;
+        }
+
+        .time-input::-webkit-outer-spin-button,
+        .time-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .time-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+        }
+
+        .time-separator {
+            font-size: 48px;
+            font-weight: 300;
+            color: var(--text-muted);
+        }
+
+        .now-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .now-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px var(--accent-glow);
+        }
+
+        .now-button:active {
+            transform: translateY(0);
+        }
+
+        /* Sleep Time Setting */
+        .sleep-setting {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-top: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .sleep-setting span {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .sleep-setting input {
+            width: 50px;
+            padding: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .sleep-setting input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Results */
+        .results {
+            margin-top: 8px;
+        }
+
+        .results-header {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .result-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px 24px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateX(4px);
+            border-color: var(--accent);
+        }
+
+        .result-card:hover::before {
+            opacity: 1;
+            background: linear-gradient(90deg, var(--accent-soft) 0%, transparent 100%);
+        }
+
+        .result-card.recommended {
+            border-color: var(--recommended);
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(34, 197, 94, 0.05) 100%);
+        }
+
+        .result-card.recommended::after {
+            content: '★';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 12px;
+            color: var(--recommended);
+        }
+
+        .result-card.minimum {
+            opacity: 0.7;
+        }
+
+        .result-time {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-primary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-info {
+            text-align: right;
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-cycles {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .result-duration {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .result-card.recommended .result-cycles {
+            color: var(--recommended);
+        }
+
+        /* Notification Banner */
+        .notification-banner {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--accent-soft) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .notification-banner.hidden {
+            display: none;
+        }
+
+        .notification-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notification-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-content h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .notification-content p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .notification-button {
+            padding: 10px 16px;
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .notification-button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Scheduled notification */
+        .scheduled-notification {
+            background: var(--bg-card);
+            border: 1px solid var(--recommended);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .scheduled-notification.hidden {
+            display: none;
+        }
+
+        .scheduled-notification h3 {
+            font-size: 14px;
+            color: var(--recommended);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .scheduled-notification p {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .scheduled-notification .cancel {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .scheduled-notification .cancel:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+
+        /* PWA Install Banner */
+        .install-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 200;
+        }
+
+        .install-banner.show {
+            transform: translateY(0);
+        }
+
+        .install-banner p {
+            flex: 1;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .install-banner button {
+            padding: 10px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .install-banner .close {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-card);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .install-banner .close svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--text-muted);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .result-card:nth-child(1) { animation-delay: 0s; }
+        .result-card:nth-child(2) { animation-delay: 0.05s; }
+        .result-card:nth-child(3) { animation-delay: 0.1s; }
+        .result-card:nth-child(4) { animation-delay: 0.15s; }
+
+        /* Hide mode-specific content */
+        .mode-wake .now-section,
+        .mode-now .picker-section {
+            display: none;
+        }
+    </style>
+</head>
+<body class="mode-wake">
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">Калькулятор сна</div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Сменить тему">
+            <svg class="sun-icon" viewBox="0 0 24 24" style="display: none;">
+                <path d="M12 7a5 5 0 100 10 5 5 0 000-10zM12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Спи правильно</h1>
+        <p>Просыпайся между циклами сна</p>
+    </section>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab active" data-mode="wake">Проснуться в</button>
+        <button class="tab" data-mode="now">Лечь сейчас</button>
+    </div>
+
+    <!-- Time Picker Section -->
+    <section class="time-section picker-section">
+        <div class="time-label">Во сколько проснуться?</div>
+        <div class="time-picker-wrapper">
+            <div class="time-display">
+                <input type="number" class="time-input" id="hoursInput" min="0" max="23" value="07">
+                <span class="time-separator">:</span>
+                <input type="number" class="time-input" id="minutesInput" min="0" max="59" value="00">
+            </div>
+            <div class="sleep-setting">
+                <span>Засыпаю за</span>
+                <input type="number" id="fallAsleepTime" min="1" max="60" value="14">
+                <span>мин</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Now Button Section -->
+    <section class="time-section now-section">
+        <div class="time-label">Расчёт от текущего времени</div>
+        <div class="time-picker-wrapper">
+            <button class="now-button" id="sleepNowBtn">
+                Ложусь спать сейчас
+            </button>
+            <div class="sleep-setting">
+                <span>Засыпаю за</span>
+                <input type="number" id="fallAsleepTimeNow" min="1" max="60" value="14">
+                <span>мин</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results -->
+    <section class="results" id="results">
+        <div class="results-header" id="resultsHeader">Ложитесь спать в:</div>
+        <div class="result-cards" id="resultCards">
+            <!-- Cards will be inserted here -->
+        </div>
+    </section>
+
+    <!-- Scheduled Notification -->
+    <div class="scheduled-notification hidden" id="scheduledNotification">
+        <h3>🔔 Напоминание установлено</h3>
+        <p id="scheduledTime">22:30</p>
+        <button class="cancel" id="cancelNotification">Отменить</button>
+    </div>
+
+    <!-- Notification Permission Banner -->
+    <div class="notification-banner hidden" id="notificationBanner">
+        <div class="notification-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9zM13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+        </div>
+        <div class="notification-content">
+            <h3>Включить напоминания?</h3>
+            <p>Напомним, когда пора ложиться</p>
+        </div>
+        <button class="notification-button" id="enableNotifications">Включить</button>
+    </div>
+
+    <!-- PWA Install Banner -->
+    <div class="install-banner" id="installBanner">
+        <p>Установить приложение на телефон?</p>
+        <button id="installBtn">Установить</button>
+        <button class="close" id="closeInstall">
+            <svg viewBox="0 0 24 24">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Constants
+        const CYCLE_DURATION = 90; // minutes
+        const DEFAULT_FALL_ASLEEP = 14; // minutes
+
+        // State
+        let currentMode = 'wake';
+        let notificationTimeout = null;
+        let deferredPrompt = null;
+
+        // DOM Elements
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const tabs = document.querySelectorAll('.tab');
+        const hoursInput = document.getElementById('hoursInput');
+        const minutesInput = document.getElementById('minutesInput');
+        const fallAsleepTime = document.getElementById('fallAsleepTime');
+        const fallAsleepTimeNow = document.getElementById('fallAsleepTimeNow');
+        const sleepNowBtn = document.getElementById('sleepNowBtn');
+        const resultsHeader = document.getElementById('resultsHeader');
+        const resultCards = document.getElementById('resultCards');
+        const notificationBanner = document.getElementById('notificationBanner');
+        const enableNotificationsBtn = document.getElementById('enableNotifications');
+        const scheduledNotification = document.getElementById('scheduledNotification');
+        const scheduledTime = document.getElementById('scheduledTime');
+        const cancelNotificationBtn = document.getElementById('cancelNotification');
+        const installBanner = document.getElementById('installBanner');
+        const installBtn = document.getElementById('installBtn');
+        const closeInstallBtn = document.getElementById('closeInstall');
+
+        // Initialize
+        function init() {
+            loadSettings();
+            calculateTimes();
+            checkNotificationPermission();
+            setupEventListeners();
+            registerServiceWorker();
+        }
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                body.classList.add('light-mode');
+                updateThemeIcon(true);
+            }
+
+            const savedFallAsleep = localStorage.getItem('fallAsleepTime');
+            if (savedFallAsleep) {
+                fallAsleepTime.value = savedFallAsleep;
+                fallAsleepTimeNow.value = savedFallAsleep;
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+
+            // Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+            });
+
+            // Time inputs
+            hoursInput.addEventListener('input', handleTimeInput);
+            minutesInput.addEventListener('input', handleTimeInput);
+            hoursInput.addEventListener('change', calculateTimes);
+            minutesInput.addEventListener('change', calculateTimes);
+
+            // Fall asleep time
+            fallAsleepTime.addEventListener('change', () => {
+                localStorage.setItem('fallAsleepTime', fallAsleepTime.value);
+                fallAsleepTimeNow.value = fallAsleepTime.value;
+                calculateTimes();
+            });
+
+            fallAsleepTimeNow.addEventListener('change', () => {
+                localStorage.setItem('fallAsleepTime', fallAsleepTimeNow.value);
+                fallAsleepTime.value = fallAsleepTimeNow.value;
+            });
+
+            // Sleep now button
+            sleepNowBtn.addEventListener('click', calculateWakeUpTimes);
+
+            // Notification controls
+            enableNotificationsBtn.addEventListener('click', requestNotificationPermission);
+            cancelNotificationBtn.addEventListener('click', cancelScheduledNotification);
+
+            // PWA Install
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                setTimeout(() => installBanner.classList.add('show'), 3000);
+            });
+
+            installBtn.addEventListener('click', installPWA);
+            closeInstallBtn.addEventListener('click', () => {
+                installBanner.classList.remove('show');
+            });
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            const isLight = body.classList.toggle('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeIcon(isLight);
+        }
+
+        function updateThemeIcon(isLight) {
+            document.querySelector('.sun-icon').style.display = isLight ? 'block' : 'none';
+            document.querySelector('.moon-icon').style.display = isLight ? 'none' : 'block';
+        }
+
+        // Mode switching
+        function switchMode(mode) {
+            currentMode = mode;
+            body.className = `mode-${mode}`;
+            
+            tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.mode === mode);
+            });
+
+            if (mode === 'wake') {
+                resultsHeader.textContent = 'Ложитесь спать в:';
+                calculateTimes();
+            } else {
+                resultsHeader.textContent = 'Просыпайтесь в:';
+                resultCards.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">Нажмите кнопку выше</p>';
+            }
+        }
+
+        // Handle time input
+        function handleTimeInput(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            const max = e.target === hoursInput ? 23 : 59;
+            
+            if (parseInt(value) > max) {
+                value = max.toString();
+            }
+            
+            e.target.value = value;
+        }
+
+        // Calculate bedtimes for "wake up at" mode
+        function calculateTimes() {
+            if (currentMode !== 'wake') return;
+
+            const hours = parseInt(hoursInput.value) || 0;
+            const minutes = parseInt(minutesInput.value) || 0;
+            const fallAsleep = parseInt(fallAsleepTime.value) || DEFAULT_FALL_ASLEEP;
+
+            const wakeTime = hours * 60 + minutes;
+            const cycles = [6, 5, 4, 3];
+            
+            const results = cycles.map(cycle => {
+                let bedtime = wakeTime - (cycle * CYCLE_DURATION) - fallAsleep;
+                if (bedtime < 0) bedtime += 24 * 60;
+                
+                return {
+                    time: formatTime(bedtime),
+                    cycles: cycle,
+                    duration: (cycle * CYCLE_DURATION / 60).toFixed(1),
+                    minutes: bedtime,
+                    recommended: cycle === 5,
+                    minimum: cycle === 3
+                };
+            });
+
+            renderResults(results);
+        }
+
+        // Calculate wake-up times for "sleep now" mode
+        function calculateWakeUpTimes() {
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const fallAsleep = parseInt(fallAsleepTimeNow.value) || DEFAULT_FALL_ASLEEP;
+
+            const cycles = [4, 5, 6];
+            
+            const results = cycles.map(cycle => {
+                let wakeTime = currentMinutes + fallAsleep + (cycle * CYCLE_DURATION);
+                if (wakeTime >= 24 * 60) wakeTime -= 24 * 60;
+                
+                return {
+                    time: formatTime(wakeTime),
+                    cycles: cycle,
+                    duration: (cycle * CYCLE_DURATION / 60).toFixed(1),
+                    minutes: wakeTime,
+                    recommended: cycle === 5,
+                    minimum: cycle === 4
+                };
+            });
+
+            resultsHeader.textContent = 'Просыпайтесь в:';
+            renderResults(results);
+        }
+
+        // Format minutes to HH:MM
+        function formatTime(totalMinutes) {
+            const hours = Math.floor(totalMinutes / 60) % 24;
+            const minutes = totalMinutes % 60;
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        // Render result cards
+        function renderResults(results) {
+            resultCards.innerHTML = results.map(result => `
+                <div class="result-card ${result.recommended ? 'recommended' : ''} ${result.minimum ? 'minimum' : ''}"
+                     onclick="scheduleNotification('${result.time}', ${result.minutes})">
+                    <span class="result-time">${result.time}</span>
+                    <div class="result-info">
+                        <div class="result-cycles">${result.cycles} ${getCycleWord(result.cycles)}</div>
+                        <div class="result-duration">${result.duration} ч сна</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Get correct word form for cycles
+        function getCycleWord(n) {
+            if (n === 1) return 'цикл';
+            if (n >= 2 && n <= 4) return 'цикла';
+            return 'циклов';
+        }
+
+        // Notification functions
+        function checkNotificationPermission() {
+            if ('Notification' in window) {
+                if (Notification.permission === 'default') {
+                    notificationBanner.classList.remove('hidden');
+                }
+            }
+        }
+
+        async function requestNotificationPermission() {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                notificationBanner.classList.add('hidden');
+                showNotification('Уведомления включены', 'Теперь мы напомним, когда пора спать');
+            }
+        }
+
+        function scheduleNotification(time, targetMinutes) {
+            if (Notification.permission !== 'granted') {
+                requestNotificationPermission();
+                return;
+            }
+
+            // Cancel existing notification
+            if (notificationTimeout) {
+                clearTimeout(notificationTimeout);
+            }
+
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            
+            let delay;
+            if (currentMode === 'wake') {
+                // For bedtime reminder, notify 15 minutes before
+                delay = (targetMinutes - currentMinutes - 15) * 60 * 1000;
+                if (delay < 0) delay += 24 * 60 * 60 * 1000;
+            } else {
+                // For wake-up, no notification needed (use system alarm)
+                return;
+            }
+
+            notificationTimeout = setTimeout(() => {
+                showNotification('Пора готовиться ко сну', `Ложитесь в ${time}, чтобы выспаться`);
+            }, delay);
+
+            // Show scheduled notification UI
+            scheduledNotification.classList.remove('hidden');
+            scheduledTime.textContent = time;
+            
+            // Save to localStorage
+            localStorage.setItem('scheduledNotification', JSON.stringify({
+                time: time,
+                targetMinutes: targetMinutes,
+                scheduledAt: Date.now(),
+                delay: delay
+            }));
+        }
+
+        function cancelScheduledNotification() {
+            if (notificationTimeout) {
+                clearTimeout(notificationTimeout);
+                notificationTimeout = null;
+            }
+            scheduledNotification.classList.add('hidden');
+            localStorage.removeItem('scheduledNotification');
+        }
+
+        function showNotification(title, body) {
+            if (Notification.permission === 'granted') {
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: 'icons/icon-192.png',
+                    badge: 'icons/icon-192.png',
+                    vibrate: [200, 100, 200]
+                });
+
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+            }
+        }
+
+        // Restore scheduled notification on page load
+        function restoreScheduledNotification() {
+            const saved = localStorage.getItem('scheduledNotification');
+            if (saved) {
+                const data = JSON.parse(saved);
+                const elapsed = Date.now() - data.scheduledAt;
+                const remaining = data.delay - elapsed;
+
+                if (remaining > 0) {
+                    notificationTimeout = setTimeout(() => {
+                        showNotification('Пора готовиться ко сну', `Ложитесь в ${data.time}, чтобы выспаться`);
+                    }, remaining);
+
+                    scheduledNotification.classList.remove('hidden');
+                    scheduledTime.textContent = data.time;
+                } else {
+                    localStorage.removeItem('scheduledNotification');
+                }
+            }
+        }
+
+        // PWA Install
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const result = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBanner.classList.remove('show');
+            }
+        }
+
+        // Register Service Worker
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('sw.js');
+                    console.log('Service Worker registered:', registration.scope);
+                } catch (error) {
+                    console.log('Service Worker registration failed:', error);
+                }
+            }
+        }
+
+        // Start app
+        init();
+        restoreScheduledNotification();
+    </script>
+</body>
+</html>
